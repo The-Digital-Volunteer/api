@@ -1,8 +1,12 @@
 import UserRating from '../models/UserRating';
+import User from '../models/User';
 
 const UserRatingController = () => {
   const register = async (req, res) => {
-    const { body } = req;
+    const { body, authUser } = req;    
+    if (!User.isTheSame(body.fromUser, authUser) && !User.isAdmin(authUser)) {
+      return res.status(401).json({ msg: 'Unauthorized' });      
+    }
     try {
       const userRating = await UserRating.create(body);
       const output = await userRating.toJSON();
@@ -15,11 +19,12 @@ const UserRatingController = () => {
 
   const created = async (req, res) => {
     const { id } = req.params;
+    const { authUser } = req;    
+    if (!User.isTheSame(id, authUser) && !User.isAdmin(authUser)) {
+      return res.status(401).json({ msg: 'Unauthorized' });      
+    }
     try {
-      const userRatings = await UserRating.findAll({
-        where: { fromUser: id },
-      });
-
+      const userRatings = await UserRating.findAll({ where: { fromUser: id } });
       const output = [];
       for (const rating of userRatings) {
         output.push(await rating.toJSON());
@@ -33,11 +38,12 @@ const UserRatingController = () => {
 
   const received = async (req, res) => {
     const { id } = req.params;
+    const { authUser } = req;    
+    if (!User.isTheSame(id, authUser) && !User.isAdmin(authUser)) {
+      return res.status(401).json({ msg: 'Unauthorized' });      
+    }
     try {
-      const userRatings = await UserRating.findAll({
-        where: { toUser: id },
-      });
-
+      const userRatings = await UserRating.findAll({ where: { toUser: id } });
       const output = [];
       for (const rating of userRatings) {
         output.push(await rating.toJSON());

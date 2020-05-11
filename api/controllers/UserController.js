@@ -52,6 +52,10 @@ const UserController = () => {
 
   const logout = async (req, res) => {
     const { id } = req.params;
+    const { authUser } = req;
+    if (!User.isTheSame(id, authUser) && !User.isAdmin(authUser)) {
+      return res.status(401).json({ msg: 'Unauthorized' });      
+    }
     try {
       const updated = await User.update({ token: null }, { where: { id } });
       if (updated) {
@@ -70,10 +74,14 @@ const UserController = () => {
 
   const get = async (req, res) => {
     const { id } = req.params;
+    const { authUser } = req;
     try {
-      const user = await User.findOne({
-        where: { id },
-      });
+      let user = null;
+      if (!User.isTheSame(id, authUser) && !User.isAdmin(authUser)) {
+        user = await User.scope('lite').findOne({ where: { id } });
+      } else {
+        user = await User.findOne({ where: { id } });
+      }
       if (!user) {
         return res.status(404).json({ msg: 'Bad Request: User not found' });
       }
@@ -86,7 +94,10 @@ const UserController = () => {
 
   const remove = async (req, res) => {
     const { id } = req.params;
-    const { body } = req;
+    const { body, authUser } = req;
+    if (!User.isTheSame(id, authUser) && !User.isAdmin(authUser)) {
+      return res.status(401).json({ msg: 'Unauthorized' });      
+    }
     if (body.onlyDisable) {
       const user = await User.update({ status: -1 }, { where: { id } });
       if (!user) {
@@ -107,7 +118,10 @@ const UserController = () => {
 
   const update = async (req, res) => {
     const { id } = req.params;
-    const { body } = req;
+    const { body, authUser } = req;
+    if (!User.isTheSame(id, authUser) && !User.isAdmin(authUser)) {
+      return res.status(401).json({ msg: 'Unauthorized' });      
+    }
     try {
       if (body.password) {
         body.password = bcryptService().password(body);

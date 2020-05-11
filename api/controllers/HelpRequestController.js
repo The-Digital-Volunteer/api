@@ -3,7 +3,10 @@ import User from '../models/User';
 
 const HelpRequestController = () => {
   const register = async (req, res) => {
-    const { body } = req;
+    const { body, authUser } = req;
+    if (!User.isTheSame(body.fromUser, authUser) && !User.isAdmin(authUser)) {
+      return res.status(401).json({ msg: 'Unauthorized' });      
+    }    
     try {
       const helpRequest = await HelpRequest.create(HelpRequest.parseHelpRequest(body));
       const output = await helpRequest.toJSON();
@@ -17,9 +20,7 @@ const HelpRequestController = () => {
   const get = async (req, res) => {
     const { id } = req.params;
     try {
-      const helpRequest = await HelpRequest.findOne({
-        where: { id },
-      });
+      const helpRequest = await HelpRequest.findOne({ where: { id } });
       if (!helpRequest) {
         return res.status(404).json({ msg: 'Bad Request: HelpRequest not found' });
       }
@@ -33,13 +34,18 @@ const HelpRequestController = () => {
 
   const update = async (req, res) => {
     const { id } = req.params;
-    const { body } = req;
+    const { body, authUser } = req;
     try {
+      let helpRequest = await HelpRequest.findOne({ where: { id } });
+      if (!helpRequest) {
+        return res.status(404).json({ msg: 'Bad Request: HelpRequest not found' });
+      }
+      if (!User.isTheSame(message.get("fromUser"), authUser) && !User.isAdmin(authUser)) {
+        return res.status(401).json({ msg: 'Unauthorized' });      
+      }
       const updated = await HelpRequest.update(HelpRequest.parseHelpRequest(body), { where: { id } });
       if (updated) {
-        const helpRequest = await HelpRequest.findOne({
-          where: { id },
-        });
+        helpRequest = await HelpRequest.findOne({ where: { id } });
         const output = await helpRequest.toJSON();
         return res.status(200).json(output);
       }
@@ -52,12 +58,14 @@ const HelpRequestController = () => {
 
   const remove = async (req, res) => {
     const { id } = req.params;
+    const { authUser } = req;
     try {
-      const helpRequest = await HelpRequest.findOne({
-        where: { id },
-      });
+      const helpRequest = await HelpRequest.findOne({ where: { id } });
       if (!helpRequest) {
         return res.status(404).json({ msg: 'Bad Request: HelpRequest not found' });
+      }
+      if (!User.isTheSame(helpRequest.get("fromUser"), authUser) && !User.isAdmin(authUser)) {
+        return res.status(401).json({ msg: 'Unauthorized' });      
       }
       await helpRequest.destroy();
       return res.status(200).json({ id });
@@ -68,7 +76,10 @@ const HelpRequestController = () => {
 
   const assign = async (req, res) => {
     const { id } = req.params;
-    const { body } = req;
+    const { body, authUser } = req;
+    if (!User.isTheSame(body.userId, authUser) && !User.isAdmin(authUser)) {
+      return res.status(401).json({ msg: 'Unauthorized' });      
+    }
     try {
       const user = await User.findOne({ where: { id: body.userId } });
       if (!user) {
@@ -89,12 +100,14 @@ const HelpRequestController = () => {
 
   const assignAccept = async (req, res) => {
     const { id } = req.params;
-    return await changeStatus(id, HelpRequest.REQUEST_STATUS_ACCEPTED, res);
+    const { authUser } = req;
+    return await changeStatus(id, HelpRequest.REQUEST_STATUS_ACCEPTED, authUser, res);
   };
 
   const markDone = async (req, res) => {
     const { id } = req.params;
-    return await changeStatus(id, HelpRequest.REQUEST_STATUS_DONE, res);
+    const { authUser } = req;
+    return await changeStatus(id, HelpRequest.REQUEST_STATUS_DONE, authUser, res);
   };
 
   const searchInNeed = async (req, res) => {
@@ -116,9 +129,7 @@ const HelpRequestController = () => {
   const searchHelper = async (req, res) => {
     const { id } = req.params;
     try {
-      const helpRequest = await HelpRequest.findOne({
-        where: { id },
-      });
+      const helpRequest = await HelpRequest.findOne({ where: { id } });
       if (!helpRequest) {
         return res.status(404).json({ msg: 'Bad Request: HelpRequest not found' });
       }
@@ -140,9 +151,19 @@ const HelpRequestController = () => {
 
   const changeStatus = async (helpRequestId, statusLevel, res) => {
     try {
+      let helpRequest = await HelpRequest.findOne({ where: { helpRequestId } });
+      if (!helpRequest) {
+        return res.status(404).json({ msg: 'Bad Request: HelpRequest not found' });
+      }
+      if (!User.isTheSame(message.get("fromUser"), authUser)
+          && !User.isTheSame(message.get("assignedUser"), authUser)
+          && !User.isAdmin(authUser)) {
+        return res.status(401).json({ msg: 'Unauthorized' });      
+      }
+
       const updated = await HelpRequest.update({ status: statusLevel }, { where: { id: helpRequestId } });
       if (updated) {
-        const helpRequest = await HelpRequest.findOne({ where: { id: helpRequestId } });
+        helpRequest = await HelpRequest.findOne({ where: { id: helpRequestId } });
         const output = await helpRequest.toJSON();
         return res.status(200).json(output);
       }

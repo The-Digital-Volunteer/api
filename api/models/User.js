@@ -120,6 +120,15 @@ const User = database.define('User', {
   tableName,
 });
 
+// eslint-disable-next-line
+User.isTheSame = (userId, authUser) => {    
+  return userId == authUser.id;
+};
+
+// eslint-disable-next-line
+User.isAdmin = (user) => {
+  return user.type == ROLE_ADMIN;
+};
 
 // eslint-disable-next-line
 User.parseUser = function(userData) {

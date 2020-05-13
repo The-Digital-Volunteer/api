@@ -54,7 +54,7 @@ const UserController = () => {
     const { id } = req.params;
     const { authUser } = req;
     if (!User.isTheSame(id, authUser) && !User.isAdmin(authUser)) {
-      return res.status(401).json({ msg: 'Unauthorized' });      
+      return res.status(401).json({ msg: 'Unauthorized' });
     }
     try {
       const updated = await User.update({ token: null }, { where: { id } });
@@ -96,7 +96,7 @@ const UserController = () => {
     const { id } = req.params;
     const { body, authUser } = req;
     if (!User.isTheSame(id, authUser) && !User.isAdmin(authUser)) {
-      return res.status(401).json({ msg: 'Unauthorized' });      
+      return res.status(401).json({ msg: 'Unauthorized' });
     }
     if (body.onlyDisable) {
       const user = await User.update({ status: -1 }, { where: { id } });
@@ -120,7 +120,7 @@ const UserController = () => {
     const { id } = req.params;
     const { body, authUser } = req;
     if (!User.isTheSame(id, authUser) && !User.isAdmin(authUser)) {
-      return res.status(401).json({ msg: 'Unauthorized' });      
+      return res.status(401).json({ msg: 'Unauthorized' });
     }
     try {
       if (body.password) {

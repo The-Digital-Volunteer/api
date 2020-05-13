@@ -1,16 +1,17 @@
+/* eslint-disable no-param-reassign */
 import {
   INTEGER, STRING, FLOAT, ENUM, Op, literal,
 } from 'sequelize';
 import bcryptService from '../services/bcrypt.service';
 import database from '../../config/database';
+// eslint-disable-next-line import/no-cycle
 import UserRating from './UserRating';
+// eslint-disable-next-line import/no-cycle
 import HelpRequest from './HelpRequest';
 
 const hooks = {
   beforeCreate(user) {
     user.password = bcryptService().password(user); // eslint-disable-line no-param-reassign
-  },
-  beforeUpdate(user) {
   },
 };
 
@@ -21,9 +22,9 @@ const ROLE_ADMIN = 'admin';
 const SKILL_DRIVER = 'driver';
 const SKILL_PICKER = 'picker';
 const SKILL_SHOPPER = 'shopper';
-const SKILL_WALKER = 'walker';
-const SKILL_ARTIST = 'artist';
-const SKILL_INMUNE = 'inmune';
+// const SKILL_WALKER = 'walker';
+// const SKILL_ARTIST = 'artist';
+// const SKILL_INMUNE = 'inmune';
 
 
 const User = database.define('User', {
@@ -122,16 +123,16 @@ const User = database.define('User', {
 
 // eslint-disable-next-line
 User.isTheSame = (userId, authUser) => {    
-  return userId == authUser.id;
+  return userId === authUser.id;
 };
 
 // eslint-disable-next-line
 User.isAdmin = (user) => {
-  return user.type == ROLE_ADMIN;
+  return user.type === ROLE_ADMIN;
 };
 
 // eslint-disable-next-line
-User.parseUser = function(userData) {
+User.parseUser = function(userData) {  
   if (userData.address) {
     userData.addressStreet = userData.address.street;
     userData.addressPostalCode = userData.address.postalCode;
@@ -182,14 +183,15 @@ User.prototype.getRating = async function(userId) {
     where: { toUser: userId },
   });
   const average = (ratingsList) => {
-    if (ratingsList.length == 0) {
+    if (ratingsList.length === 0) {
       return 0;
     }
-    let average = 0;
+    let avg = 0;
+    // eslint-disable-next-line no-restricted-syntax
     for (const rating of ratingsList) {
-      average += parseInt(rating.value);
+      avg += parseInt(rating.value, 10);
     }
-    return average / (ratingsList.length);
+    return avg / (ratingsList.length);
   };
   return {
     total: ratings.length,

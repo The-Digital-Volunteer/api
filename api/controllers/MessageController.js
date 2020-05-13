@@ -3,9 +3,9 @@ import User from '../models/User';
 
 const MessageController = () => {
   const register = async (req, res) => {
-    const { body, authUser } = req;    
+    const { body, authUser } = req;
     if (!User.isTheSame(body.fromUser, authUser) && !User.isAdmin(authUser)) {
-      return res.status(401).json({ msg: 'Unauthorized' });      
+      return res.status(401).json({ msg: 'Unauthorized' });
     }
     try {
       const message = await Message.create(body);
@@ -25,10 +25,10 @@ const MessageController = () => {
       if (!message) {
         return res.status(404).json({ msg: 'Bad Request: Message not found' });
       }
-      if (!User.isTheSame(message.get("fromUser"), authUser) 
-          && !User.isTheSame(message.get("toUser"), authUser) 
+      if (!User.isTheSame(message.get('fromUser'), authUser)
+          && !User.isTheSame(message.get('toUser'), authUser)
           && !User.isAdmin(authUser)) {
-        return res.status(401).json({ msg: 'Unauthorized' });      
+        return res.status(401).json({ msg: 'Unauthorized' });
       }
       const output = await message.toJSON();
       return res.status(200).json(output);
@@ -44,11 +44,11 @@ const MessageController = () => {
       const message = await Message.findOne({ where: { id } });
       if (!message) {
         return res.status(404).json({ msg: 'Bad Request: Message not found' });
-      }    
-      if (!User.isTheSame(message.get("fromUser"), authUser) 
-          && !User.isTheSame(message.get("toUser"), authUser) 
+      }
+      if (!User.isTheSame(message.get('fromUser'), authUser)
+          && !User.isTheSame(message.get('toUser'), authUser)
           && !User.isAdmin(authUser)) {
-        return res.status(401).json({ msg: 'Unauthorized' });      
+        return res.status(401).json({ msg: 'Unauthorized' });
       }
       await message.destroy();
       return res.status(200).json({ id });
@@ -61,12 +61,14 @@ const MessageController = () => {
     const { id } = req.params;
     const { authUser } = req;
     if (!User.isTheSame(id, authUser) && !User.isAdmin(authUser)) {
-      return res.status(401).json({ msg: 'Unauthorized' });      
+      return res.status(401).json({ msg: 'Unauthorized' });
     }
     try {
       const messages = await Message.findAll({ where: { fromUser: id } });
       const output = [];
+      // eslint-disable-next-line no-restricted-syntax
       for (const message of messages) {
+        // eslint-disable-next-line no-await-in-loop
         output.push(await message.toJSON());
       }
       return res.status(200).json(output);
@@ -80,12 +82,14 @@ const MessageController = () => {
     const { id } = req.params;
     const { authUser } = req;
     if (!User.isTheSame(id, authUser) && !User.isAdmin(authUser)) {
-      return res.status(401).json({ msg: 'Unauthorized' });      
+      return res.status(401).json({ msg: 'Unauthorized' });
     }
     try {
       const messages = await Message.findAll({ where: { toUser: id } });
       const output = [];
+      // eslint-disable-next-line no-restricted-syntax
       for (const message of messages) {
+        // eslint-disable-next-line no-await-in-loop
         output.push(await message.toJSON());
       }
       return res.status(200).json(output);

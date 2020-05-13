@@ -1,6 +1,8 @@
+/* eslint-disable no-param-reassign */
 import {
   INTEGER, STRING, ENUM, FLOAT, Op, literal,
 } from 'sequelize';
+// eslint-disable-next-line import/no-cycle
 import User from './User';
 import database from '../../config/database';
 
@@ -95,6 +97,7 @@ HelpRequest.searchForInNeed = async function(latitude, longitude, authUser) {
   skillToHelpType[User.SKILL_PICKER] = HELP_TYPE_MEDICINE;
   skillToHelpType[User.SKILL_SHOPPER] = HELP_TYPE_OTHER;
   const helpTypes = [];
+  // eslint-disable-next-line no-restricted-syntax
   for (const item of authUser.get('skills').split('|')) {
     if (skillToHelpType[item]) {
       helpTypes.push(skillToHelpType[item]);

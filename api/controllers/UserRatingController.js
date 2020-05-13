@@ -3,9 +3,9 @@ import User from '../models/User';
 
 const UserRatingController = () => {
   const register = async (req, res) => {
-    const { body, authUser } = req;    
+    const { body, authUser } = req;
     if (!User.isTheSame(body.fromUser, authUser) && !User.isAdmin(authUser)) {
-      return res.status(401).json({ msg: 'Unauthorized' });      
+      return res.status(401).json({ msg: 'Unauthorized' });
     }
     try {
       const userRating = await UserRating.create(body);
@@ -19,14 +19,16 @@ const UserRatingController = () => {
 
   const created = async (req, res) => {
     const { id } = req.params;
-    const { authUser } = req;    
+    const { authUser } = req;
     if (!User.isTheSame(id, authUser) && !User.isAdmin(authUser)) {
-      return res.status(401).json({ msg: 'Unauthorized' });      
+      return res.status(401).json({ msg: 'Unauthorized' });
     }
     try {
       const userRatings = await UserRating.findAll({ where: { fromUser: id } });
       const output = [];
+      // eslint-disable-next-line no-restricted-syntax
       for (const rating of userRatings) {
+        // eslint-disable-next-line no-await-in-loop
         output.push(await rating.toJSON());
       }
       return res.status(200).json(output);
@@ -38,14 +40,16 @@ const UserRatingController = () => {
 
   const received = async (req, res) => {
     const { id } = req.params;
-    const { authUser } = req;    
+    const { authUser } = req;
     if (!User.isTheSame(id, authUser) && !User.isAdmin(authUser)) {
-      return res.status(401).json({ msg: 'Unauthorized' });      
+      return res.status(401).json({ msg: 'Unauthorized' });
     }
     try {
       const userRatings = await UserRating.findAll({ where: { toUser: id } });
       const output = [];
+      // eslint-disable-next-line no-restricted-syntax
       for (const rating of userRatings) {
+        // eslint-disable-next-line no-await-in-loop
         output.push(await rating.toJSON());
       }
       return res.status(200).json(output);

@@ -1,4 +1,5 @@
 import { INTEGER, STRING } from 'sequelize';
+// eslint-disable-next-line import/no-cycle
 import User from './User';
 import database from '../../config/database';
 

@@ -1,571 +1,611 @@
 # Express REST API FOR thedigitalvolunteer project
-
 > Express REST API FOR thedigitalvolunteer project with Token auth & mysql backend
 
-
 ## Table of Contents
-
 - [Install & Use](#install-and-use)
-- [Folder Structure](#folder-structure)
-- [Controllers](#controllers)
-  - [Create a Controller](#create-a-controller)
-- [Models](#models)
-  - [Create a Model](#create-a-model)
-- [Policies](#policies)
-  - [auth.policy](#authpolicy)
-- [Services](#services)
-- [Config](#config)
-  - [Connection and Database](#connection-and-database)
-- [Routes](#routes)
-  - [Create Routes](#create-routes)
-- [Test](#test)
-  - [Setup](#setup)
-- [npm Scripts](#npm-scripts)
+- [Entities](#entities)
+  - [User Entity Full](#user-entity-full)
+  - [User Entity Lite](#user-entity-lite)
+  - [Message Entity](#message-entity)
+  - [UserRating Entity](#userrating-entity)
+  - [HelpRequest Entity](#helprequest-entity)
+- [Endpoints](#endpoints)
+  - [User methods](#user-methods)
+  - [Message methods](#message-methods)
+  - [UserRating methods](#userrating-methods)
+  - [HelpRequest methods](#helprequest-methods)  
 
 ## Install and Use
-
 Start by cloning this repository
 
 ```sh
 # HTTPS
-$ git clone https://github.com/aichbauer/express-rest-api-boilerplate.git
+$ git clone https://github.com/The-Digital-Volunteer/api.git
 ```
 
-then
+If you have nodejs and yarn installed in your system you can 
 
 ```sh
 # cd into project root
 $ yarn
-# to use mysql
-$ yarn add mysql2
-# to use postgresql
-$ yarn add pg pg-hstore
 # start the api
 $ yarn start
 ```
 
-or
+If you have docker & docker-compose installed
 
 ```sh
 # cd into project root
-$ npm i
-# to use mysql
-$ npm i mysql2 -S
-# to use postgresql
-$ npm i -S pg pg-hstore
-# start the api
-$ npm start
+# launch services
+$ docker-compose up --build
 ```
 
-sqlite is supported out of the box as it is the default.
+## UTILITIES
+- `yarn dev` - simply start the server withou a watcher
+- `yarn lint` - linting with [eslint](http://eslint.org/)
+- `yarn nodemon` - same as `npm start``
+- `yarn prepush` - a hook wich runs before pushing to a repository, runs `yarn test`
+- `yarn pretest` - runs linting before `yarn test`
 
-## Folder Structure
 
-This boilerplate has 4 main directories:
 
-- api - for controllers, models, services, etc.
-- config - for routes, database, etc.
-- db - this is only a dir for the sqlite db, the default for NODE_ENV development
-- test - using [Jest](https://github.com/facebook/jest)
-
-## Controllers
-
-### Create a Controller
-
-Controllers in this boilerplate have a naming convention: `ModelnameController.js` and uses an object factory pattern.
-To use a model inside of your controller you have to require it.
-We use [Sequelize](http://docs.sequelizejs.com/) as ORM, if you want further information read the [Docs](http://docs.sequelizejs.com/).
-
-Example Controller for all **CRUD** oparations:
-
-```js
-const Model = require('../models/Model');
-
-const ModelController = () => {
-  const create = async (req, res) => {
-    // body is part of a form-data
-    const { value } = req.body;
-
-    try {
-      const model = await Model.create({
-        key: value
-      });
-
-      if(!model) {
-        return res.status(400).json({ msg: 'Bad Request: Model not found' });
-      }
-
-      return res.status(200).json({ model });
-    } catch (err) {
-      // better save it to log file
-      console.error(err);
-
-      return res.status(500).json({ msg: 'Internal server error' });
-    }
-  };
-
-  const getAll = async (req, res) => {
-    try {
-      const model = await Model.findAll();
-
-      if(!models){
-        return res.status(400).json({ msg: 'Bad Request: Models not found' });
-      }
-
-      return res.status(200).json({ models });
-    } catch (err) {
-      // better save it to log file
-      console.error(err);
-
-      return res.status(500).json({ msg: 'Internal server error' });
-    }
-  };
-
-  const get = async (req, res) => {
-    // params is part of an url
-    const { id } = req.params;
-
-    try {
-      const model = await Model.findOne({
-        where: {
-          id,
-        },
-      });
-
-      if(!model) {
-        return res.status(400).json({ msg: 'Bad Request: Model not found' });
-      }
-
-      return res.status(200).json({ model });
-    } catch (err) {
-      // better save it to log file
-      console.error(err);
-
-      return res.status(500).json({ msg: 'Internal server error' });
-    }
-  };
-
-  const update = async (req, res) => {
-    // params is part of an url
-    const { id } = req.params;
-
-    // body is part of form-data
-    const { value } = req.body;
-
-    try {
-      const model = await Model.findById(id);
-
-      if(!model) {
-        return res.status(400).json({ msg: 'Bad Request: Model not found' });
-      }
-
-      const updatedModel = await model.update({
-        key: value,
-      )};
-
-      return res.status(200).json({ updatedModel });
-    } catch (err) {
-      // better save it to log file
-      console.error(err);
-
-      return res.status(500).json({ msg: 'Internal server error' });
-    }
-  };
-
-  const destroy = async (req, res) => {
-    // params is part of an url
-    const { id } = req.params;
-
-    try {
-      const model =  Model.findById(id);
-
-      if(!model) {
-        return res.status(400).json({ msg: 'Bad Request: Model not found' })
-      }
-
-      await model.destroy();
-
-      return res.status(200).json({ msg: 'Successfully destroyed model' });
-    } catch (err) {
-      // better save it to log file
-      console.error(err);
-
-      return res.status(500).json({ msg: 'Internal server error' });
-    }
-  };
-
-  // IMPORTANT
-  // don't forget to return the functions
-  return {
-    create,
-    getAll,
-    get,
-    update,
-    destroy,
-  };
-};
-
-model.exports = ModelController;
-```
-
-## Models
-
-### Create a Model
-
-Models in this boilerplate have a naming convention: `Model.js` and uses [Sequelize](http://docs.sequelizejs.com/) to define our Models, if you want further information read the [Docs](http://docs.sequelizejs.com/).
-
-Example User Model:
-
-```js
-const Sequelize = require('sequelize');
-
-// for encrypting our passwords
-const bcryptSevice = require('../services/bcrypt.service');
-
-// the DB connection
-const sequelize = require('../../config/database');
-
-// hooks are functions that can run before or after a specific event
-const hooks = {
-  beforeCreate(user) {
-    user.password = bcryptSevice.password(user);
-  },
-};
-
-// naming the table in DB
-const tableName = 'users';
-
-// the actual model
-const User = sequelize.define('User', {
-  username: {
-    type: Sequelize.STRING,
-    unique: true,
-  },
-  password: {
-    type: Sequelize.STRING,
-  },
-}, { hooks, tableName });
-
-// instead of using instanceMethod
-// in sequelize > 4 we are writing the function
-// to the prototype object of our model.
-// as we do not want to share sensitive data, the password
-// field gets ommited before sending
-User.prototype.toJSON = function () {
-  const values = Object.assign({}, this.get());
-
-  delete values.password;
-
-  return values;
-};
-
-// IMPORTANT
-// don't forget to export the Model
-module.exports = User;
-```
-
-## Policies
-
-Policies are middleware functions that can run before hitting a apecific or more specified route(s).
-
-Example policy:
-
-Only allow if the user is marked as admin.
-
-> Note: this is not a secure example, only for presentation puposes
-
-```js
-module.exports = (req, res, next) => {
-  if(req.body.userrole === 'admin') {
-    // do some verification stuff
-    const verified = verifyAdmin(req.body.userid);
-
-    if(verified) {
-      return next();
-    }
-
-    return res.status(401).json({ msg: 'Unauthorized' });
-  }
-
-  return res.status(401).json({ msg: 'Unauthorized' });
-};
-```
-
-To use this policy on all routes that only admins are allowed:
-
-api.js
-
-```js
-const adminPolicy = require('./policies/admin.policy');
-
-app.all('/admin/*', (req, res, next) => adminPolicy(req,res,next));
-```
-
-Or for one specific route
-
-api.js
-
-```js
-const adminPolicy = require('./policies/admin.policy');
-
-app.get('/admin/myroute',
-  (req, res, next) => adminPolicy(req,res,next),
-  (req, res) => {
-  //do some fancy stuff
-});
-```
-
-## auth.policy
-
-The `auth.policy` checks wether a `JSON Web Token` ([further information](https://jwt.io/)) is send in the header of an request as `Authorization: Bearer [JSON Web Token]` or inside of the body of an request as `token: [JSON Web Token]`.
-The policy runs default on all api routes that are are prefixed with `/private`. To map multiple routes read the [docs](https://github.com/aichbauer/express-routes-mapper/blob/master/README.md) from `express-routes-mapper`.
-
-To use this policy on all routes of a specific prefix:
-
-app.js
-
-```js
-app.use('/prefix', yourRoutes);
-app.all('/prefix', (req, res, next) => auth(req, res, next));
-```
-
-or to use this policy on one specific route:
-
-app.js
-
-```js
-app.get('/specificRoute',
-  (req, res, next) => auth(req, res, next),
-  (req, res) => {
-  // do some fancy stuff
-});
-```
-
-## Services
-
-Services are little useful snippets, or calls to another API that are not the main focus of your API.
-
-Example service:
-
-Get comments from another API:
-
-```js
-const commentService = () => {
-  const getComments = async () => {
-    try {
-      const res = await fetch('https://jsonplaceholder.typicode.com/comments', {
-        method: 'get'
-      });
-
-      // do some fancy stuff with the response
-    } catch (err) {
-      // handle a error
-    }
-  };
-
-  return {
-    getComments,
-  };
-};
-
-module.exports = commentService;
-```
-
-## Config
-
-Holds all the server configurations.
-
-## Connection and Database
-
-> Note: if you use msql make sure mysql server is running on the machine
-
-> Note: if you use postgres make sure postgres server is running on the machine
-
-This two files are the way to establish a connaction to a database.
-
-You only need to touch connection.js, default for `development` is sqlite, but it is easy as typing `mysql` or `postgres` to switch to another db.
-
-> Note: to run a mysql db install these package with: `yarn add mysql2` or `npm i mysql2 -S`
-
-> Note: to run a postgres db run these package with: `yarn add pg pg-hstore` or `npm i -S pg pg-hstore`
-
-Now simple configure the keys with your credentials.
-
-```js
+## ENTITIES
+### User Entity Full
+```json
 {
-  database: 'databasename',
-  username: 'username',
-  password: 'password',
-  host: 'localhost',
-  dialect: 'sqlite' || 'mysql' || 'postgres',
+    "id": 1,
+    "firstName": "Ivan",
+    "lastName": "Ugarte",
+    "email": "ivan.ugarte.castro@gmail.com",
+    "bankId": null,
+    "password": "$2a$10$nhc248lbJKzIV9r8YVBTUe0pX3gAIx3JDBlJylFtSBgh5VUpEbAYG",
+    "phone": "653666666",
+    "about": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed elementum sem et tellus suscipit, eget laoreet sapien blandit. Phasellus diam turpis, sollicitudin egestas lacus eu, pulvinar porta neque. Nullam tristique massa auctor odio vestibulum, id malesuada arcu fringilla. Vestibulum feugiat lobortis purus, ut venenatis mi accumsan nec. ",
+    "avatar": null,
+    "token": "$2a$10$WVYD7Zh4nW205NivSxxUKOmqu75wbjLgo4wHttzIsCp1xEwtnABUG",
+    "status": 0,
+    "role": "helper",
+    "skills": [
+        "driver",
+        "picker",
+        "shopper",
+        "inmune"
+    ],
+    "createdAt": "2020-04-26T11:18:26.000Z",
+    "updatedAt": "2020-04-26T11:18:26.000Z",
+    "address": {
+        "street": "Avda Random 125, 3B",
+        "postalCode": "28044",
+        "city": "Madrid"
+    },
+    "location": {
+        "latitude": 40.381008,
+        "longitude": -3.779788
+    },
+    "rating": {
+        "total": 2,
+        "average": 7.5
+    }
+}
+```
+### User Entity Lite
+```json
+{
+    "id": 3,
+    "firstName": "Ivan3",
+    "lastName": "Ugarte",
+    "about": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed elementum sem et tellus suscipit, eget laoreet sapien blandit. Phasellus diam turpis, sollicitudin egestas lacus eu, pulvinar porta neque. Nullam tristique massa auctor odio vestibulum, id malesuada arcu fringilla. Vestibulum feugiat lobortis purus, ut venenatis mi accumsan nec. ",
+    "avatar": null,
+    "rating": {
+        "total": 7,
+        "average": 8.285714285714286
+    }
 }
 ```
 
-To not configure the production code.
-
-To start the DB, add the credentials for production. add `environment variables` by typing e.g. `export DB_USER=yourusername` before starting the api.
-
-## Routes
-
-Here you define all your routes for your api. It doesn't matter how you structure them. By default they are mapped on `privateRoutes` and `publicRoutes`. You can define as much routes files as you want e.g. for every model or for specific use cases, e.g. normal user and admins.
-
-## Create Routes
-
-For further information read the [docs](https://github.com/aichbauer/express-routes-mapper/blob/master/README.md) of express-routes-mapper.
-
-Example for User Model:
-
-> Note: Only supported Methods are **POST**, **GET**, **PUT**, and **DELETE**.
-
-userRoutes.js
-
-```js
-const userRoutes = {
-  'POST /user': 'UserController.create',
-  'GET /users': 'UserController.getAll',
-  'GET /user/:id': 'UserController.get',
-  'PUT /user/:id': 'UserController.update',
-  'DELETE /user/': 'UserController.destroy',
-};
-
-module.exports = userRoutes;
+### Message Entity
+```json
+{
+    "id": 1,
+    "fromUser": {
+        "id": 3,
+        "firstName": "Ivan3",
+        "lastName": "Ugarte",
+        "about": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed elementum sem et tellus suscipit, eget laoreet sapien blandit. Phasellus diam turpis, sollicitudin egestas lacus eu, pulvinar porta neque. Nullam tristique massa auctor odio vestibulum, id malesuada arcu fringilla. Vestibulum feugiat lobortis purus, ut venenatis mi accumsan nec. ",
+        "avatar": null,
+        "rating": {
+            "total": 7,
+            "average": 8.285714285714286
+        }
+    },
+    "toUser": {
+        "id": 1,
+        "firstName": "Ivan",
+        "lastName": "Ugarte",
+        "about": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed elementum sem et tellus suscipit, eget laoreet sapien blandit. Phasellus diam turpis, sollicitudin egestas lacus eu, pulvinar porta neque. Nullam tristique massa auctor odio vestibulum, id malesuada arcu fringilla. Vestibulum feugiat lobortis purus, ut venenatis mi accumsan nec. ",
+        "avatar": null,
+        "rating": {
+            "total": 2,
+            "average": 7.5
+        }
+    },
+    "helpRequest": null,
+    "title": "i am a title",
+    "content": "thx for all folks",
+    "createdAt": "2020-04-26T10:18:34.000Z",
+    "updatedAt": "2020-04-26T10:18:34.000Z"
+}
 ```
 
-To use these routes in your application, require them in the config/index.js and export them.
-
-```js
-const userRoutes = require('./userRoutes');
-
-const config = {
-  allTheOtherStuff,
-  userRoutes,
-};
-
-module.exports = config;
+### UserRating Entity
+```json
+{
+        "id": 8,
+        "fromUser": {
+            "id": 3,
+            "firstName": "Ivan3",
+            "lastName": "Ugarte",
+            "about": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed elementum sem et tellus suscipit, eget laoreet sapien blandit. Phasellus diam turpis, sollicitudin egestas lacus eu, pulvinar porta neque. Nullam tristique massa auctor odio vestibulum, id malesuada arcu fringilla. Vestibulum feugiat lobortis purus, ut venenatis mi accumsan nec. ",
+            "avatar": null,
+            "rating": {
+                "total": 7,
+                "average": 8.285714285714286
+            }
+        },
+        "toUser": {
+            "id": 1,
+            "firstName": "Ivan",
+            "lastName": "Ugarte",
+            "about": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed elementum sem et tellus suscipit, eget laoreet sapien blandit. Phasellus diam turpis, sollicitudin egestas lacus eu, pulvinar porta neque. Nullam tristique massa auctor odio vestibulum, id malesuada arcu fringilla. Vestibulum feugiat lobortis purus, ut venenatis mi accumsan nec. ",
+            "avatar": null,
+            "rating": {
+                "total": 2,
+                "average": 7.5
+            }
+        },
+        "value": 5,
+        "comment": "Lore lore macu macu",
+        "createdAt": "2020-04-26T09:20:49.000Z",
+        "updatedAt": "2020-04-26T09:20:49.000Z"
+    }
 ```
 
-api.js
-
-```js
-const mappedUserRoutes = mapRoutes(config.userRoutes, 'api/controllers/');
-
-app.use('/prefix', mappedUserRoutes);
-
-// to protect them with authentication
-app.all('/prefix/*', (req, res, next) => auth(req, res, next));
+### HelpRequest Entity
+```json
+{
+    "id": 2,
+    "fromUser": {
+        "id": 2,
+        "firstName": "Ivan2",
+        "lastName": "Ugarte",
+        "phone": "653666666",
+        "about": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed elementum sem et tellus suscipit, eget laoreet sapien blandit. Phasellus diam turpis, sollicitudin egestas lacus eu, pulvinar porta neque. Nullam tristique massa auctor odio vestibulum, id malesuada arcu fringilla. Vestibulum feugiat lobortis purus, ut venenatis mi accumsan nec. ",
+        "avatar": null,
+        "address": {
+            "street": "Avda Random 125, 3B",
+            "postalCode": "28044",
+            "city": "Madrid"
+        },
+        "rating": {
+            "total": 0,
+            "average": 0
+        }
+    },
+    "assignedUser": null,
+    "description": "Need some pork meat, 1 dozen eggs, 4 milk bottles, gouda",
+    "priority": 1,
+    "status": 0,
+    "helpType": "other",
+    "timeOptions": [
+        "10:00-11:00",
+        "12:00-13:00"
+    ],
+    "deliveryOption": "door",
+    "paymentOption": "cash",
+    "createdAt": "2020-04-26T12:41:46.000Z",
+    "updatedAt": "2020-04-26T14:07:51.000Z",
+    "location": {
+        "latitude": 40.382507,
+        "longitude": -3.778288
+    }
+}
 ```
 
-## Test
+## ENDPOINTS
+All methods marked as [signed] must include a X-Auth-Token Header with the token that is returned in the POST /user or POST /user/auth methods or it will return a 401 Unauthorized error
 
-All test for this boilerplate uses [Jest](https://github.com/facebook/jest) and [supertest](https://github.com/visionmedia/superagent) for integration testing. So read their docs on further information.
+You can check the postman collection for examples 
+https://www.getpostman.com/collections/32f60ce3b96144952ddd
 
-### Setup
-
-The setup directory holds the `_setup.js` which holds `beforeAction` which starts a test express application and connects to your test database, and a `afterAction` which closes the db connection.
-
-### Controller
-
-> Note: those request are asynchronous, we use `async await` syntax.
-
-> Note: As we don't use import statements inside the api we also use the require syntax for tests
-
-To test a Controller we create `fake requests` to our api routes.
-
-Example `GET /user` from last example with prefix `prefix`:
-
-```js
-const request = require('supertest');
-const {
-  beforeAction,
-  afterAction,
-} = require('../setup/_setup');
-
-let api;
-
-beforeAll(async () => {
-  api = await beforeAction();
-});
-
-afterAll(() => {
-  afterAction();
-});
-
-test('test', async () => {
-  const token = 'this-should-be-a-valid-token';
-
-  const res = await request(api)
-    .get('/prefix/user')
-    .set('Accept', /json/)
-    // if auth is needed
-    .set('Authorization', `Bearer ${token}`)
-    .set('Content-Type', 'application/json')
-    .expect(200);
-
-  // read the docs of jest for further information
-  expect(res.body.user).toBe('something');
-});
+### USER METHODS
+#### POST /user
+> Body
+```json
+{
+	"firstName": "Ivan3",
+	"lastName": "Ugarte",	
+	"bankId": "ivan.ugarte.castro3@gmail.com",	
+	"password": "harris00",
+	"phone": "653666666",
+	"address": {
+		"street": "Avda Random 125, 3B",
+		"postalCode": "28044",
+		"city": "Madrid"
+	},
+	"location": {
+		"latitude": 40.3825075,
+		"longitude": -3.7782882		
+	},
+	"skills": "driver|picker|shopper",
+	"role": "helper",
+	"status": 0,	
+	"about": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed elementum sem et tellus suscipit, eget laoreet sapien blandit. Phasellus diam turpis, sollicitudin egestas lacus eu, pulvinar porta neque. Nullam tristique massa auctor odio vestibulum, id malesuada arcu fringilla. Vestibulum feugiat lobortis purus, ut venenatis mi accumsan nec. "
+}
 ```
+> Output
+```json
+{
+	FULL USER ENTITY,
+	...
+	"token": "38423484328947412384723483247328934adfafafafaf"
+}
+```
+> Error codes
+- 402 bankId or email already created
+- 500 db error
 
-### Models
+#### POST /user/auth
+> Body
+```json
+{
+	"email": "ivan.ugarte.castro@gmail.com",
+	"password": "hsfsdfsdjsdfkajsfsdf"
+}
+```
+> Output
+```json
+{
+	FULL USER ENTITY,
+	...
+	"token": "38423484328947412384723483247328934adfafafafaf"
+}
+```
+> Error codes
+- 403 forbidden
+- 500 db error
 
-Are usually automatically tested in the integration tests as the Controller uses the Models, but you can test them separatly.
+#### GET /user/:id
+> Output
+```json
+{
+	FULL USER ENTITY OR LITE USER ENTITY BASED ON X-Auth-Token	
+}
+```
+> Error codes
+- 404 user not found
+- 500 db error
 
-## npm scripts
+#### PUT /user/:id
+> Body
+```json
+{
+	"firstName": "Ivan3",
+	"lastName": "Ugarte",	
+	"bankId": "ivan.ugarte.castro3@gmail.com",	
+	"password": "harris00",
+	"phone": "653666666",
+	"address": {
+		"street": "Avda Random 125, 3B",
+		"postalCode": "28044",
+		"city": "Madrid"
+	},
+	"location": {
+		"latitude": 40.3825075,
+		"longitude": -3.7782882		
+	},
+	"skills": "driver|picker|shopper",
+	"role": "helper",
+	"status": 0,	
+	"about": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed elementum sem et tellus suscipit, eget laoreet sapien blandit. Phasellus diam turpis, sollicitudin egestas lacus eu, pulvinar porta neque. Nullam tristique massa auctor odio vestibulum, id malesuada arcu fringilla. Vestibulum feugiat lobortis purus, ut venenatis mi accumsan nec. "
+}
+```
+> Output
+```json
+{
+	FULL USER ENTITY,
+}
+```
+> Error codes
+- 401 unauthorized
+- 404 user not found
+- 500 db error
 
-There are no automation tool or task runner like [grunt](https://gruntjs.com/) or [gulp](http://gulpjs.com/) used for this boilerplate. These boilerplate only uses npm scripts for automatization.
+#### DELETE /user/:id
+> Body
+```json
+{
+	"onlyDisable": boolean -> it indicates if the user must be flagged as disabled (no login, no actions can be made) or fully deleted from the db (including all messages, request and whatever related to the user)
+}
+```
+> Output
+```json
+{
+	"id": int // passthrough of the :id
+}
+```
+> Error codes
+- 401 unauthorized
+- 404 user not found
+- 500 db error
 
-### npm start
+#### POST /user/:id/logout
+Output
+```json
+{
+	"id": int // passthrough of the :id
+}
+```
+Error codes
+- 401 unauthorized
+- 404 user not found
+- 500 db error
 
-This is the entry for a developer. This command:
 
-By default it uses a sqlite databse, if you want to migrate the sqlite db by each start, disable the `prestart` and `poststart` command. Also mind if you are using a sqlite database to delete the `drop-sqlite-db` in the prepush hook.
 
-- runs **nodemon watch task** for the all files conected to `.api/api.js`
-- sets the **environment variable** `NODE_ENV` to `development`
-- opens the db connection for `development`
-- starts the server on 127.0.0.1:2017
 
-### npm test
+### MESSAGE METHODS
+#### POST /message
+> Body
+```json
+{
+	"fromUser": 1,
+	"toUser": 3,
+	"title": "i am a title4",
+	"content": "thx for all folks4"
+}
+```
+> Output
+```json
+{
+	MESSAGE ENTITY
+}
+```
+> Error codes
+- 401 unauthorized
+- 500 db error
 
-This command:
+#### GET /message/:id
+> Output
+```json
+{
+	MESSAGE ENTITY
+}
+```
+> Error codes
+- 401 unauthorized
+- 404 forbidden
+- 404 Message not found
+- 500 db error
 
-- runs `npm run lint` ([eslint](http://eslint.org/)) with the [airbnb styleguide](https://github.com/airbnb/javascript) without arrow-parens rule for **better readability**
-- sets the **environment variable** `NODE_ENV` to `testing`
-- creates the `database.sqlite` for the test
-- runs `jest --coverage` for testing with [Jest](https://github.com/facebook/jest) and the coverage
-- drops the `database.sqlite` after the test
+#### DELETE /message/:id
+> Output
+```json
+{
+	id: int, // Passthough of the *ID*
+}
+```
+> Error codes
+- 401 unauthorized
+- 404 forbidden
+- 404 Message not found
+- 500 db error
 
-## npm run production
 
-This command:
+#### GET /user/:id/messages/sent
+> Output
+```json
+[
+	MESSAGE ENTITY, MESSAGE ENTITY, ...
+]
+```
+> Error codes
+- 401 unauthorized
+- 404 forbidden
+- 404 user not found
+- 500 db error
 
-- sets the **environment variable** to `production`
-- opens the db connection for `production`
-- starts the server on 127.0.0.1:2017 or on 127.0.0.1:PORT_ENV
+#### GET /user/:id/messages/received
+> Output
+```json
+[
+	MESSAGE ENTITY, MESSAGE ENTITY, ...
+]
+```
+> Error codes
+- 401 unauthorized
+- 404 forbidden
+- 404 user not found
+- 500 db error
 
-Before running on production you have to set the **environment vaiables**:
 
-- DB_NAME - database name for production
-- DB_USER - database username for production
-- DB_PASS - database password for production
-- DB_HOST - database host for production
-- JWT_SECERT - secret for json web token
+### USER RATING METHODS
+#### POST /rating
+> Body
+```json
+{
+	"fromUser": 3,
+	"toUser": 1,
+	"value": 10,
+	"comment": "Lore lore macu macu"
+}
+```
+> Output
+```json
+{
+	USER RATING ENTITY
+}
+```
+> Error codes
+- 401 unauthorized
+- 500 db error
 
-Optional:
+#### GET /user/:id/ratings/received
+> Output
+```json
+[
+	USERRATING ENTITY, USERRATING ENTITY, ...
+]
+```
+> Error codes
+- 401 unauthorized
+- 404 forbidden
+- 404 User not found
+- 500 db error
 
-- PORT - the port your api on 127.0.0.1, default to 2017
+#### GET /user/:id/ratings/created
+> Output
+```json
+[
+	USERRATING ENTITY, USERRATING ENTITY, ...
+]
+```
+> Error codes
+- 401 unauthorized
+- 404 forbidden
+- 404 User not found
+- 500 db error
 
-### other commands
 
-- `npm run dev` - simply start the server withou a watcher
-- `npm run create-sqlite-db` - creates the sqlite database
-- `npm run drop-sqlite-db` - drops **ONLY** the sqlite database
-- `npm run lint` - linting with [eslint](http://eslint.org/)
-- `npm run nodemon` - same as `npm start``
-- `npm run prepush` - a hook wich runs before pushing to a repository, runs `npm test` and `npm run dropDB`
-- `pretest` - runs linting before `npm test`
-- `test-ci` - only runs tests, nothing in pretest, nothing in posttest, for better use with ci tools
+### HELP REQUEST METHODS
+#### POST /help-request
+> Body
+```json
+{
+	"fromUser": 2,
+	"description": "Need some pork meat, 1 dozen eggs, 6 milk bottles",	
+	"location": {
+		"latitude": 40.3825075,
+		"longitude": -3.7782882		
+	},
+	"helpType": "groceries",
+	"deliveryOption": "door",
+	"paymentOption": "cash",
+	"timeOptions": ["10:00-11:00","12:00-13:00","19:00-20:00","20:00-21:00"]
+}
+```
+> Output
+```json
+{
+	HELP REQUEST ENTITY
+}
+```
+> Error codes
+- 401 unauthorized
+- 500 db error
 
-## LICENSE
+#### POST /help-request/search/inneed
+> Output
+```json
+[
+	HELP REQUEST ENTITY, HELP REQUEST ENTITY, ...
+]
+```
+> Error codes
+- 500 db error
 
-MIT © Lukas Aichbauer
+#### POST /help-request/search/helper
+> Output
+```json
+[
+	HELP REQUEST ENTITY, HELP REQUEST ENTITY, ...
+]
+```
+> Error codes
+- 500 db error
+
+
+#### GET /help-request/:id
+> Output
+```json
+{
+	HELP REQUEST ENTITY
+}
+```
+> Error codes
+- 404 help request not found
+- 500 db error
+
+#### PUT /help-request/:id
+> Body (whatever field in the Help Request Entity)
+```json
+{
+	"description": "Need some pork meat, 1 dozen eggs, 4 milk bottles, gouda",	
+	"location": {
+		"latitude": 40.3825075,
+		"longitude": -3.7782882		
+	},
+	"helpType": "groceries",
+	"deliveryOption": "door",
+	"paymentOption": "cash",
+	"timeOptions": ["10:00-11:00","12:00-13:00"]
+}
+```
+> Output
+```json
+{
+	HELP REQUEST ENTITY
+}
+```
+> Error codes
+- 404 help request not found
+- 500 db error
+
+#### DELETE /help-request/:id
+> Output
+```json
+{
+	"id": ":id"
+}
+```
+> Error codes
+- 404 help request not found
+- 500 db error
+
+#### POST /help-request/:id/assign
+> Body
+```json
+{
+	"userId": 1	
+}
+```
+> Output
+```json
+{
+	HELP REQUEST ENTITY
+}
+```
+> Error codes
+- 404 help request not found
+- 500 db error
+
+#### POST /help-request/:id/accept
+> Output
+```json
+{
+	HELP REQUEST ENTITY
+}
+```
+> Error codes
+- 404 help request not found
+- 500 db error
+
+#### POST /help-request/:id/done
+> Output
+```json
+{
+	HELP REQUEST ENTITY
+}
+```
+> Error codes
+- 404 help request not found
+- 500 db error

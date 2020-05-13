@@ -15,8 +15,8 @@ const bcryptService = () => {
     return hashed;
   };
 
-  const comparePassword = (pw, hash) => (
-    compareSync(pw, hash)
+  const comparePassword = (pw, hashPw) => (
+    compareSync(pw, hashPw)
   );
 
   return {

@@ -1,11 +1,11 @@
 import Sequelize from 'sequelize';
 import connection from './connection';
 
-let database;
+let databaseVar;
 
 switch (process.env.NODE_ENV) {
   case 'production':
-    database = new Sequelize(
+    databaseVar = new Sequelize(
       connection.production.database,
       connection.production.username,
       connection.production.password, {
@@ -20,7 +20,7 @@ switch (process.env.NODE_ENV) {
     );
     break;
   default:
-    database = new Sequelize(
+    databaseVar = new Sequelize(
       connection.development.database,
       connection.development.username,
       connection.development.password, {
@@ -34,5 +34,6 @@ switch (process.env.NODE_ENV) {
       },
     );
 }
+const database = databaseVar;
 
 export default database;

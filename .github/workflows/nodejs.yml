@@ -22,5 +22,5 @@ jobs:
     # - uses: borales/actions-yarn@v2.0.0
     #   with:
     #     cmd: test # will run `yarn test` command
-    - name: Test
-      run: docker-compose up --exit-code-from api
+    # - name: Test
+    #   run: docker-compose up --exit-code-from api

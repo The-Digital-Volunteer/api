@@ -63,7 +63,7 @@ const UserRatingController = () => {
     const { id } = req.params;
     const { authUser } = req;
     if (!User.isTheSame(id, authUser) && !User.isAdmin(authUser)) {
-      return res.status(401).json({ msg: 'Unauthorized' });
+      return res.status(401).json({ msg: `Unauthorized -${ id }-${ authUser.id }-` });
     }
     try {
       const pendingHelpers = await User.getPendingHelpers(id);

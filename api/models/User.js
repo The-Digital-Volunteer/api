@@ -123,7 +123,7 @@ const User = database.define('User', {
 
 // eslint-disable-next-line
 User.isTheSame = (userId, authUser) => {
-  return userId === authUser.id;
+  return Number(userId) === authUser.id;
 };
 
 // eslint-disable-next-line
@@ -181,7 +181,7 @@ User.searchForHelpers = async function(latitude, longitude, helpType) {
 User.getPendingHelpers = async function(userId) {
   return User.scope('helpRequest').findAll({
     where: literal(`
-      users.id IN (
+      User.id IN (
         SELECT assignedUser FROM help_requests
         WHERE fromUser = ${ userId }
         AND status = ${ HelpRequest.REQUEST_STATUS_DONE }
@@ -198,7 +198,7 @@ User.getPendingHelpers = async function(userId) {
 User.getPendingInneeds = async function(userId) {
   return User.scope('helpRequest').findAll({
     where: literal(`
-      users.id IN (
+      User.id IN (
         SELECT fromUser FROM help_requests
         WHERE assignedUser = ${ userId }
         AND status = ${ HelpRequest.REQUEST_STATUS_DONE }

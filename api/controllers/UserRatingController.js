@@ -63,7 +63,7 @@ const UserRatingController = () => {
     const { id } = req.params;
     const { authUser } = req;
     if (!User.isTheSame(id, authUser) && !User.isAdmin(authUser)) {
-      return res.status(401).json({ msg: `Unauthorized -${ id }-${ authUser.id }-` });
+      return res.status(401).json({ msg: 'Unauthorized' });
     }
     try {
       const pendingHelpers = await User.getPendingHelpers(id);
@@ -85,7 +85,6 @@ const UserRatingController = () => {
 
       return res.status(200).json(output);
     } catch (err) {
-      console.error(err);
       return res.status(500).json({ msg: 'Internal server error' });
     }
   };

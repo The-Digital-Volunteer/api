@@ -23,7 +23,7 @@ Start by cloning this repository
 $ git clone https://github.com/The-Digital-Volunteer/api.git
 ```
 
-If you have nodejs and yarn installed in your system you can 
+If you have nodejs and yarn installed in your system you can
 
 ```sh
 # cd into project root
@@ -212,9 +212,9 @@ $ docker-compose up --build
 ```
 
 ## ENDPOINTS
-All methods marked as [signed] must include a X-Auth-Token Header with the token that is returned in the POST /user or POST /user/auth methods or it will return a 401 Unauthorized error
+All methods marked as [auth] in the [routes structure](https://github.com/The-Digital-Volunteer/api/blob/master/config/routes/publicRoutes.js#L3) must include a X-Auth-Token Header with the token that is returned in the POST /user or POST /user/auth methods or it will return a 401 Unauthorized error
 
-You can check the postman collection for examples 
+You can check the postman collection for examples
 https://www.getpostman.com/collections/32f60ce3b96144952ddd
 
 ### USER METHODS
@@ -223,8 +223,8 @@ https://www.getpostman.com/collections/32f60ce3b96144952ddd
 ```json
 {
 	"firstName": "Ivan3",
-	"lastName": "Ugarte",	
-	"bankId": "ivan.ugarte.castro3@gmail.com",	
+	"lastName": "Ugarte",
+	"bankId": "ivan.ugarte.castro3@gmail.com",
 	"password": "harris00",
 	"phone": "653666666",
 	"address": {
@@ -238,7 +238,7 @@ https://www.getpostman.com/collections/32f60ce3b96144952ddd
 	},
 	"skills": "driver|picker|shopper",
 	"role": "helper",
-	"status": 0,	
+	"status": 0,
 	"about": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed elementum sem et tellus suscipit, eget laoreet sapien blandit. Phasellus diam turpis, sollicitudin egestas lacus eu, pulvinar porta neque. Nullam tristique massa auctor odio vestibulum, id malesuada arcu fringilla. Vestibulum feugiat lobortis purus, ut venenatis mi accumsan nec. "
 }
 ```
@@ -278,7 +278,7 @@ https://www.getpostman.com/collections/32f60ce3b96144952ddd
 > Output
 ```json
 {
-	FULL USER ENTITY OR LITE USER ENTITY BASED ON X-Auth-Token	
+	FULL USER ENTITY OR LITE USER ENTITY BASED ON X-Auth-Token
 }
 ```
 > Error codes
@@ -290,8 +290,8 @@ https://www.getpostman.com/collections/32f60ce3b96144952ddd
 ```json
 {
 	"firstName": "Ivan3",
-	"lastName": "Ugarte",	
-	"bankId": "ivan.ugarte.castro3@gmail.com",	
+	"lastName": "Ugarte",
+	"bankId": "ivan.ugarte.castro3@gmail.com",
 	"password": "harris00",
 	"phone": "653666666",
 	"address": {
@@ -305,7 +305,7 @@ https://www.getpostman.com/collections/32f60ce3b96144952ddd
 	},
 	"skills": "driver|picker|shopper",
 	"role": "helper",
-	"status": 0,	
+	"status": 0,
 	"about": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed elementum sem et tellus suscipit, eget laoreet sapien blandit. Phasellus diam turpis, sollicitudin egestas lacus eu, pulvinar porta neque. Nullam tristique massa auctor odio vestibulum, id malesuada arcu fringilla. Vestibulum feugiat lobortis purus, ut venenatis mi accumsan nec. "
 }
 ```
@@ -482,7 +482,7 @@ Error codes
 ```json
 {
 	"fromUser": 2,
-	"description": "Need some pork meat, 1 dozen eggs, 6 milk bottles",	
+	"description": "Need some pork meat, 1 dozen eggs, 6 milk bottles",
 	"location": {
 		"latitude": 40.3825075,
 		"longitude": -3.7782882		
@@ -539,7 +539,7 @@ Error codes
 > Body (whatever field in the Help Request Entity)
 ```json
 {
-	"description": "Need some pork meat, 1 dozen eggs, 4 milk bottles, gouda",	
+	"description": "Need some pork meat, 1 dozen eggs, 4 milk bottles, gouda",
 	"location": {
 		"latitude": 40.3825075,
 		"longitude": -3.7782882		
@@ -575,7 +575,7 @@ Error codes
 > Body
 ```json
 {
-	"userId": 1	
+	"userId": 1
 }
 ```
 > Output

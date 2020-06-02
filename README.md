@@ -450,6 +450,7 @@ Error codes
 - 500 db error
 
 #### GET /user/:id/ratings/received
+Get the ratings that the user has received
 > Output
 ```json
 [
@@ -463,11 +464,27 @@ Error codes
 - 500 db error
 
 #### GET /user/:id/ratings/created
+Get the ratings that the user has done
 > Output
 ```json
 [
 	USERRATING ENTITY, USERRATING ENTITY, ...
 ]
+```
+> Error codes
+- 401 unauthorized
+- 404 forbidden
+- 404 User not found
+- 500 db error
+
+#### GET /user/:id/ratings/pending
+Get the users of completed help requests that the given user has started or attended, but that have not yet received a rating.
+> Output
+```json
+{
+  helpers: [ USER ENTITY, USER ENTITY, ... ],
+  inneeds: [ USER ENTITY, USER ENTITY, ... ]
+}
 ```
 > Error codes
 - 401 unauthorized

@@ -32,6 +32,10 @@ const routes = {
     path: 'UserRatingController.created',
     middlewares: [auth],
   },
+  'GET /user/:id/ratings/pending': {
+    path: 'UserRatingController.pending',
+    middlewares: [auth],
+  },
 
   'POST /message': {
     path: 'MessageController.register',

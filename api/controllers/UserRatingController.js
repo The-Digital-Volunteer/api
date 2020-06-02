@@ -59,10 +59,42 @@ const UserRatingController = () => {
     }
   };
 
+  const pending = async (req, res) => {
+    const { id } = req.params;
+    const { authUser } = req;
+    if (!User.isTheSame(id, authUser) && !User.isAdmin(authUser)) {
+      return res.status(401).json({ msg: 'Unauthorized' });
+    }
+    try {
+      const pendingHelpers = await User.getPendingHelpers(id);
+      const pendingInneeds = await User.getPendingInneeds(id);
+
+      const output = { helpers: [], inneeds: [] };
+
+      // eslint-disable-next-line no-restricted-syntax
+      for (const user of pendingHelpers) {
+        // eslint-disable-next-line no-await-in-loop
+        output.helpers.push(await user.toJSON());
+      }
+
+      // eslint-disable-next-line no-restricted-syntax
+      for (const user of pendingInneeds) {
+        // eslint-disable-next-line no-await-in-loop
+        output.inneeds.push(await user.toJSON());
+      }
+
+      return res.status(200).json(output);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ msg: 'Internal server error' });
+    }
+  };
+
   return {
     register,
     created,
     received,
+    pending,
   };
 };
 

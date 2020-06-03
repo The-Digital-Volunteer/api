@@ -122,8 +122,8 @@ const User = database.define('User', {
 });
 
 // eslint-disable-next-line
-User.isTheSame = (userId, authUser) => {    
-  return userId === authUser.id;
+User.isTheSame = (userId, authUser) => {
+  return Number(userId) === authUser.id;
 };
 
 // eslint-disable-next-line
@@ -132,7 +132,7 @@ User.isAdmin = (user) => {
 };
 
 // eslint-disable-next-line
-User.parseUser = function(userData) {  
+User.parseUser = function(userData) {
   if (userData.address) {
     userData.addressStreet = userData.address.street;
     userData.addressPostalCode = userData.address.postalCode;
@@ -176,6 +176,40 @@ User.searchForHelpers = async function(latitude, longitude, helpType) {
     return [];
   }
 };
+
+// eslint-disable-next-line
+User.getPendingHelpers = async function(userId) {
+  return User.scope('helpRequest').findAll({
+    where: literal(`
+      User.id IN (
+        SELECT assignedUser FROM help_requests
+        WHERE fromUser = ${ userId }
+        AND status = ${ HelpRequest.REQUEST_STATUS_DONE }
+        AND assignedUser NOT IN (
+          SELECT toUser FROM user_ratings
+          WHERE fromUser = ${ userId }
+        )
+      )
+    `),
+  });
+}
+
+// eslint-disable-next-line
+User.getPendingInneeds = async function(userId) {
+  return User.scope('helpRequest').findAll({
+    where: literal(`
+      User.id IN (
+        SELECT fromUser FROM help_requests
+        WHERE assignedUser = ${ userId }
+        AND status = ${ HelpRequest.REQUEST_STATUS_DONE }
+        AND fromUser NOT IN (
+          SELECT toUser FROM user_ratings
+          WHERE fromUser = ${ userId }
+        )
+      )
+    `),
+  });
+}
 
 // eslint-disable-next-line
 User.prototype.getRating = async function(userId) {

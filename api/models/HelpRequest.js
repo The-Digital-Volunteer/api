@@ -122,7 +122,7 @@ HelpRequest.searchForInNeed = async function(latitude, longitude, authUser) {
 };
 
 // eslint-disable-next-line
-HelpRequest.prototype.toJSON = async function() {    
+HelpRequest.prototype.toJSON = async function() {
   const values = { ...this.get() };
 
   if (values.fromUser) {
@@ -151,12 +151,12 @@ HelpRequest.prototype.toJSON = async function() {
     delete values.locationLongitude;
   }
 
-  HelpRequest.REQUEST_STATUS_INIT = REQUEST_STATUS_INIT;
-  HelpRequest.REQUEST_STATUS_ACCEPTED = REQUEST_STATUS_ACCEPTED;
-  HelpRequest.REQUEST_STATUS_DONE = REQUEST_STATUS_DONE;
-
   return values;
 };
+
+HelpRequest.REQUEST_STATUS_INIT = REQUEST_STATUS_INIT;
+HelpRequest.REQUEST_STATUS_ACCEPTED = REQUEST_STATUS_ACCEPTED;
+HelpRequest.REQUEST_STATUS_DONE = REQUEST_STATUS_DONE;
 
 HelpRequest.HELP_TYPE_SHOP = HELP_TYPE_SHOP;
 HelpRequest.HELP_TYPE_TRANSPORT = HELP_TYPE_TRANSPORT;

@@ -1,53 +1,54 @@
+import Ajv from 'ajv';
+
 import User from '../models/User';
 import authService from '../services/auth.service';
-import bcryptService from '../services/bcrypt.service';
+import {
+  authRequest,
+  registerRequest,
+  updateRequest,
+} from '../schemas/user';
 
 const UserController = () => {
+  const ajv = new Ajv({ useDefaults: true });
+
   const register = async (req, res) => {
-    const { body } = req;
+    const valid = ajv.validate(registerRequest, req.body);
+    if (!valid) {
+      return res.status(400).json({ msg: 'Bad Request' });
+    }
     try {
-      body.token = authService(body.id);
-      const user = await User.create(User.parseUser(body));
-      const output = await user.toJSON();
-      return res.status(200).json(output);
+      req.body.token = authService(req.body.id || '');
+      const user = await User.create(req.body);
+      return res.status(201).json(user.toJSON());
     } catch (err) {
-      return res.status(500).json({ msg: 'Could not create user' });
+      return res.status(500).json({ msg: 'Internal server error' });
     }
   };
 
   const auth = async (req, res) => {
+    const valid = ajv.validate(authRequest, req.body);
+    if (!valid) {
+      return res.status(400).json({ msg: 'Bad Request' });
+    }
     const { email, bankId, password } = req.body;
     let user;
-    if (email && password) {
-      try {
-        user = await User.findOne({
-          where: { email },
-        });
-      } catch (err) {
-        return res.status(500).json({ msg: 'Internal server error' });
-      }
-    } else if (bankId && password) {
-      try {
-        user = await User.findOne({
-          where: { bankId },
-        });
-      } catch (err) {
-        return res.status(500).json({ msg: 'Internal server error' });
-      }
-    } else {
-      return res.status(401).json({ msg: 'Unauthorized' });
-    }
-    if (!user) {
-      return res.status(404).json({ msg: 'Bad Request: User not found' });
-    }
-    if (bcryptService().comparePassword(password, user.password)) {
-      user.token = authService(user.id);
-      await user.save();
-      const output = await user.toJSON();
-      return res.status(200).json(output);
+    try {
+      user = await User.findOne({
+        where: { email, bankId },
+      });
+    } catch (err) {
+      return res.status(500).json({ msg: 'Internal server error' });
     }
 
-    return res.status(401).json({ msg: 'Unauthorized' });
+    if (!user) return res.status(404).json({ msg: 'User not found' });
+
+    if (!(await user.checkPassword(password))) {
+      return res.status(401).json({ msg: 'Unauthorized' });
+    }
+    const token = authService(user.getDataValue('id'));
+    user.setDataValue('token', token);
+    await user.save();
+    return res.status(200).json(user.toJSON());
   };
 
   const logout = async (req, res) => {
@@ -62,12 +63,10 @@ const UserController = () => {
         const user = await User.findOne({
           where: { id },
         });
-        const output = await user.toJSON();
-        return res.status(200).json(output);
+        return res.status(200).json(user.toJSON());
       }
-      return res.status(404).json({ msg: 'Bad Request: User not found' });
+      return res.status(404).json({ msg: 'User not found' });
     } catch (err) {
-      console.log(err);
       return res.status(500).json({ msg: 'Internal server error' });
     }
   };
@@ -83,10 +82,9 @@ const UserController = () => {
         user = await User.findOne({ where: { id } });
       }
       if (!user) {
-        return res.status(404).json({ msg: 'Bad Request: User not found' });
+        return res.status(404).json({ msg: 'User not found' });
       }
-      const output = await user.toJSON();
-      return res.status(200).json(output);
+      return res.status(200).json(user.toJSON());
     } catch (err) {
       return res.status(500).json({ msg: 'Internal server error' });
     }
@@ -101,14 +99,14 @@ const UserController = () => {
     if (body.onlyDisable) {
       const user = await User.update({ status: -1 }, { where: { id } });
       if (!user) {
-        return res.status(404).json({ msg: 'Bad Request: User not found' });
+        return res.status(404).json({ msg: 'User not found' });
       }
     } else {
       const user = await User.findOne({
         where: { id },
       });
       if (!user) {
-        return res.status(404).json({ msg: 'Bad Request: User not found' });
+        return res.status(404).json({ msg: 'User not found' });
       }
       await user.destroy();
     }
@@ -117,26 +115,23 @@ const UserController = () => {
   };
 
   const update = async (req, res) => {
+    const valid = ajv.validate(updateRequest, req.body);
+    if (!valid) {
+      return res.status(400).json({ msg: 'Bad Request' });
+    }
     const { id } = req.params;
     const { body, authUser } = req;
     if (!User.isTheSame(id, authUser) && !User.isAdmin(authUser)) {
       return res.status(401).json({ msg: 'Unauthorized' });
     }
     try {
-      if (body.password) {
-        body.password = bcryptService().password(body);
-      }
-      const updated = await User.update(User.parseUser(body), { where: { id } });
+      const updated = await User.update(body, { where: { id } });
       if (updated) {
-        const user = await User.findOne({
-          where: { id },
-        });
-        const output = await user.toJSON();
-        return res.status(200).json(output);
+        const user = await User.findOne({ where: { id } });
+        return res.status(200).json(user);
       }
-      return res.status(404).json({ msg: 'Bad Request: User not found' });
+      return res.status(404).json({ msg: 'User not found' });
     } catch (err) {
-      console.log(err);
       return res.status(500).json({ msg: 'Internal server error' });
     }
   };
@@ -151,4 +146,4 @@ const UserController = () => {
   };
 };
 
-module.exports = UserController;
+module.exports = UserController();

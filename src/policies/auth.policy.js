@@ -1,7 +1,6 @@
 import User from '../models/User';
 
 export default async (req, res, next) => {
-  // usually: "X-Auth-Token: [token]"
   let tokenToVerify;
   if (req.header('X-Auth-Token')) {
     tokenToVerify = req.header('X-Auth-Token');
@@ -13,6 +12,7 @@ export default async (req, res, next) => {
   }
 
   const user = await User.findOne({
+    raw: true,
     where: { token: tokenToVerify },
   });
   if (!user) {

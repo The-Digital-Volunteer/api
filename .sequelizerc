@@ -1,0 +1,9 @@
+const { resolve } = require("path");
+const { db: { dialect, username, password, database } } = require("./config");
+
+module.exports = {
+  "models-path": resolve(__dirname, "src", "models"),
+  "seeders-path": resolve(__dirname, "src", "database", "seeds"),
+  "migrations-path": resolve(__dirname, "src", "database", "migrations"),
+  "url": `${dialect}://${username}:${password}@127.0.0.1/${database}`
+};

@@ -16,12 +16,12 @@ services:
       - api-db
 
   api-db:
-    image: mysql:5.7
+    image: mysql:${MYSQL_TAG}
     environment:
-      MYSQL_ROOT_PASSWORD: VCW-NCfz-6wpi.TvTPyUuf!q.T6J@WPqGrxk3teb*rcurYQqTk
-      MYSQL_DATABASE: thedigitalvolunteer
-      MYSQL_USER: thedigitalvolunteer
-      MYSQL_PASSWORD: ZqXrvu8Gi2TUC6H9FLr-wLHYhZ_WUxeGjLuH*tBjVKzbJjTKGy
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
     volumes:
         - db-data:/var/lib/mysql
     networks:

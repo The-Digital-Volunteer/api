@@ -16,28 +16,29 @@
   - [HelpRequest methods](#helprequest-methods)  
 
 ## Install and Use
-Start by cloning this repository
+Download and Install Docker
+https://docs.docker.com/get-docker/
+
+Download and Install Docker Compose
+https://docs.docker.com/compose/install/
+
+
+Cloning this repository
 
 ```sh
 # HTTPS
 $ git clone https://github.com/The-Digital-Volunteer/api.git
 ```
 
-If you have nodejs and yarn installed in your system you can 
-
+Running MySQL and NodeJS as a service on background
 ```sh
 # cd into project root
+cd api
+$ cp .env.development .env
+$ docker-compose up -d
 $ yarn
-# start the api
-$ yarn start
-```
-
-If you have docker & docker-compose installed
-
-```sh
-# cd into project root
-# launch services
-$ docker-compose up --build
+$ ./node_modules/.bin/sequelize db:create
+$ ./node_modules/.bin/sequelize db:migrate
 ```
 
 ## UTILITIES

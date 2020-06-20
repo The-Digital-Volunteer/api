@@ -1,1 +1,6 @@
 node_modules
+__tests__/results
+!__tests__/results/.keep
+.env
+yarn.lock
+package-lock.json

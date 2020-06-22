@@ -19,6 +19,7 @@ routes.delete('/users/:id', UserController.remove);
 routes.post('/rating', UserRatingController.register);
 routes.get('/user/:userId/ratings/received', UserRatingController.received);
 routes.get('/user/:userId/ratings/created', UserRatingController.created);
+routes.get('/user/:userId/ratings/pending', UserRatingController.pending);
 
 routes.post('/message', MessageController.register);
 routes.get('/message/:id', MessageController.get);

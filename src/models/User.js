@@ -10,6 +10,8 @@ import {
 } from 'sequelize';
 import bcrypt from 'bcryptjs';
 
+import UserRating from '../models/UserRating';
+
 const REQUEST_STATUS_INIT = 0;
 const REQUEST_STATUS_ACCEPTED = 1;
 const REQUEST_STATUS_DONE = 2;
@@ -124,6 +126,58 @@ class User extends Model {
     } catch (err) {
       throw err;
     }
+  }
+
+  static async getRating(userId) {
+    const ratings = await UserRating.findAll({
+      where: { toUser: userId },
+    });
+    const average = (ratingsList) => {
+      if (ratingsList.length === 0) {
+        return 0;
+      }
+      let avg = 0;
+      for (const rating of ratingsList) {
+        avg += parseInt(rating.value, 10);
+      }
+      return avg / (ratingsList.length);
+    };
+    return {
+      total: ratings.length,
+      average: average(ratings),
+    };
+  };
+
+  static async getPendingHelpers(userId) {
+    return User.scope('helpRequest').findAll({
+      where: literal(`
+        User.id IN (
+          SELECT assignedUser FROM help_requests
+          WHERE fromUser = ${ userId }
+          AND status = ${ REQUEST_STATUS_DONE }
+          AND assignedUser NOT IN (
+            SELECT toUser FROM user_ratings
+            WHERE fromUser = ${ userId }
+          )
+        )
+      `),
+    });
+  }
+
+  static async getPendingInneeds(userId) {
+    return User.scope('helpRequest').findAll({
+      where: literal(`
+        User.id IN (
+          SELECT fromUser FROM help_requests
+          WHERE assignedUser = ${ userId }
+          AND status = ${ REQUEST_STATUS_DONE }
+          AND fromUser NOT IN (
+            SELECT toUser FROM user_ratings
+            WHERE fromUser = ${ userId }
+          )
+        )
+      `),
+    });
   }
 }
 

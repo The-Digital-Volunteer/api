@@ -54,10 +54,31 @@ const UserRatingController = () => {
     }
   };
 
+  const pending = async (req, res) => {
+    const { userId } = req.params;
+    const { authUser } = req;
+    if (!User.isTheSame(userId, authUser) && !User.isAdmin(authUser)) {
+      return res.status(401).json({ msg: 'Unauthorized' });
+    }
+    try {
+      const pendingHelpers = await User.getPendingHelpers(userId);
+      const pendingInneeds = await User.getPendingInneeds(userId);
+
+      const output = { helpers: [], inneeds: [] };
+      output.helpers = pendingHelpers;
+      output.inneeds = pendingInneeds;
+
+      return res.status(200).json(output);
+    } catch (err) {
+      return res.status(500).json({ msg: 'Internal server error' });
+    }
+  };
+
   return {
     register,
     created,
     received,
+    pending,
   };
 };
 

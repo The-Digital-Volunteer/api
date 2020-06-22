@@ -1,7 +1,11 @@
 {
   "name": "thedigitalvolunteer-api",
   "version": "1.0.0",
-  "author": "Ivan Ugarte <ivan.ugarte.castro@gmail.com>",
+  "contributors": [
+    "Ivan Ugarte <ivan.ugarte.castro@gmail.com>",
+    "Santiago Arriaga <santiago.arriaga9@gmail.com>",
+    "André Rodrigues <rodriguesporan@gmail.com>"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

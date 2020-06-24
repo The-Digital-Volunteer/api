@@ -15,11 +15,11 @@ routes.get('/users/:id/logout', UserController.logout);
 routes.get('/users/:id', UserController.get);
 routes.put('/users/:id', UserController.update);
 routes.delete('/users/:id', UserController.remove);
+routes.get('/users/:id/pending', UserController.pending);
 
 routes.post('/rating', UserRatingController.register);
 routes.get('/user/:userId/ratings/received', UserRatingController.received);
 routes.get('/user/:userId/ratings/created', UserRatingController.created);
-routes.get('/user/:userId/ratings/pending', UserRatingController.pending);
 
 routes.post('/message', MessageController.register);
 routes.get('/message/:id', MessageController.get);

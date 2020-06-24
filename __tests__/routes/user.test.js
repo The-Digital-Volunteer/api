@@ -55,6 +55,11 @@ describe("User", () => {
       const res = await request.get(`/users/${userId}/logout`);
       expect(res.status).toBe(401);
     });
+
+    it("Should not retrieve pending helpers and pending inneeds from a user.", async () => {
+      const res = await request.get(`/users/${userId}/pending`);
+      expect(res.status).toBe(401);
+    });
   });
 
   describe("if the user is not logged in and data is wrong", () => {
@@ -122,6 +127,14 @@ describe("User", () => {
       const resEmptyUserId = await request.get(`/users/${emptyUserId}/logout`);
       expect(resEmptyUserId.status).toBe(404);
     });
+
+    it("Should not retrieve pending helpers and pending inneeds from a user.", async () => {
+      const resInvalidUserId = await request.get(`/users/${invalidUserId}/pending`);
+      expect(resInvalidUserId.status).toBe(401);
+
+      const resEmptyUserId = await request.get(`/users/${emptyUserId}/pending`);
+      expect(resEmptyUserId.status).toBe(404);
+    });
   });
 
   describe("if the user is logged in and data is right", () => {
@@ -139,6 +152,11 @@ describe("User", () => {
     it("Should update a user.", async () => {
       const newUser = { ...user, email, bankId };
       const res = await request.put(`/users/${userId}`).send(newUser);
+      expect(res.status).toBe(200);
+    });
+
+    it("Should retrieve pending helpers and pending inneeds from a user.", async () => {
+      const res = await request.get(`/users/${userId}/pending`);
       expect(res.status).toBe(200);
     });
 

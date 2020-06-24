@@ -136,6 +136,26 @@ const UserController = () => {
     }
   };
 
+  const pending = async (req, res) => {
+    const { id } = req.params;
+    const { authUser } = req;
+    if (!User.isTheSame(id, authUser) && !User.isAdmin(authUser)) {
+      return res.status(401).json({ msg: 'Unauthorized' });
+    }
+    try {
+      const pendingHelpers = await User.getPendingHelpers(id);
+      const pendingInneeds = await User.getPendingInneeds(id);
+
+      const output = { helpers: [], inneeds: [] };
+      output.helpers = pendingHelpers;
+      output.inneeds = pendingInneeds;
+
+      return res.status(200).json(output);
+    } catch (err) {
+      return res.status(500).json({ msg: 'Internal server error' });
+    }
+  };
+
   return {
     register,
     auth,
@@ -143,6 +163,7 @@ const UserController = () => {
     get,
     update,
     remove,
+    pending,
   };
 };
 

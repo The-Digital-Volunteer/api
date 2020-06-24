@@ -1,20 +1,6 @@
-version: "3"
+version: "3.01"
 
 services:
-  api:
-    image: custom-node
-    build: .
-    command: sh -c "yarn install && yarn run dev"
-    ports:
-      - 8080:8080
-    working_dir: /api
-    volumes:
-      - ./:/api
-    networks:
-      - backend
-    depends_on: 
-      - api-db
-
   api-db:
     image: mysql:${MYSQL_TAG}
     environment:

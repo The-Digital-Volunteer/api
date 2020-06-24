@@ -1,9 +1,11 @@
-import routes from './routes/publicRoutes';
+const { join } = require('path');
+const dotenv = require('dotenv');
 
-const config = {
-  migrate: true,
-  routes,
-  port: 8080,
-};
+dotenv.config();
 
-export default config;
+const ENV = process.env.NODE_ENV || 'development';
+const envConfig = require(join(__dirname, 'environments', ENV));
+
+const config = { env: ENV, ...envConfig };
+
+module.exports = config;

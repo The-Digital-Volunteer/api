@@ -61,7 +61,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "echo 'yarn lint'",
+      "pre-commit": "yarn lint",
       "pre-push": "yarn test"
     }
   }

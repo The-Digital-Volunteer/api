@@ -23,8 +23,7 @@
     "dev": "cross-env NODE_ENV=development nodemon ./src/index.js",
     "lint": "eslint ./src/. ./config/.",
     "lint-fix": "eslint --fix ./src/. ./config/.",
-    "test": "jest --forceExit --detectOpenHandles",
-    "pretest": "npm run lint"
+    "test": "jest --forceExit --detectOpenHandles"
   },
   "dependencies": {
     "ajv": "^6.12.2",
@@ -62,7 +61,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm test"
+      "pre-commit": "yarn lint"
     }
   }
 }

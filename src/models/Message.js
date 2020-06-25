@@ -17,10 +17,6 @@ class Message extends Model {
       { sequelize, underscored: false, tableName: 'messages' },
     );
 
-    this.addHook('beforeSave', async (message) => {
-
-    });
-
     return this;
   }
 }

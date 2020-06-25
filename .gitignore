@@ -1,6 +1,8 @@
 node_modules
 __tests__/results
 !__tests__/results/.keep
+build
+!build/.keep
 .env
 yarn.lock
 package-lock.json

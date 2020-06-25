@@ -8,29 +8,9 @@ import {
   assignRequest,
 } from '../schemas/help-request';
 
-const REQUEST_STATUS_INIT = 0;
 const REQUEST_STATUS_ACCEPTED = 1;
 const REQUEST_STATUS_DONE = 2;
-
-const HELP_TYPE_SHOP = 'groceries';
-const HELP_TYPE_TRANSPORT = 'transport';
-const HELP_TYPE_MEDICINE = 'medicine';
-const HELP_TYPE_OTHER = 'other';
-
-const DELIVERY_DOOR = 'door';
-const DELIVERY_PORCH = 'porch';
-const DELIVERY_DRONE = 'drone';
-
-const DELIVERY_CASH = 'cash';
-const DELIVERY_CARD = 'card';
-const DELIVERY_SWISH = 'swish';
-
-const ROLE_HELPER = 'helper';
-const ROLE_INNEED = 'inneed';
-const ROLE_ADMIN = 'admin';
-const SKILL_DRIVER = 'driver';
-const SKILL_PICKER = 'picker';
-const SKILL_SHOPPER = 'shopper';
+const radius = 5000; // 5km
 
 const HelpRequestController = () => {
   const ajv = new Ajv({ useDefaults: true });
@@ -123,11 +103,9 @@ const HelpRequestController = () => {
       let helpRequest = await HelpRequest.findOne({ where: { id } });
       if (!helpRequest) return res.status(404).json({ msg: 'HelpRequest not found' });
 
-      const updated = await HelpRequest.update({ assignedUser: body.userId }, { where: { id } });
-      if (updated) {
-        helpRequest = await HelpRequest.findOne({ where: { id } });
-        return res.status(200).json(helpRequest.toJSON());
-      }
+      await HelpRequest.update({ assignedUser: body.userId }, { where: { id } });
+      helpRequest = await HelpRequest.findOne({ where: { id } });
+      return res.status(200).json(helpRequest.toJSON());
     } catch (err) {
       return res.status(500).json({ msg: 'Internal server error' });
     }
@@ -181,7 +159,12 @@ const HelpRequestController = () => {
     const { latitude, longitude } = req.body;
     try {
       const user = await User.findOne({ where: { id: authUser.id } });
-      const helpRequests = await HelpRequest.searchForInNeed(latitude, longitude, user);
+      const helpRequests = await HelpRequest.searchForInNeed(
+        radius,
+        latitude,
+        longitude,
+        user,
+      );
       return res.status(200).json(helpRequests);
     } catch (err) {
       return res.status(500).json({ msg: 'Internal server error' });
@@ -196,6 +179,7 @@ const HelpRequestController = () => {
         return res.status(404).json({ msg: 'HelpRequest not found' });
       }
       const users = await User.searchForHelpers(
+        radius,
         helpRequest.get('locationLatitude'),
         helpRequest.get('locationLongitude'),
         helpRequest.get('helpType'),

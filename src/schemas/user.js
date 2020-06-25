@@ -21,8 +21,10 @@ const updateRequest = {
     avatar: { type: ['string', 'null'], maxLength: 1024 },
     status: { pattern: '^(-([1])|[0,1])$' },
     role: { enum: ['inneed', 'helper', 'admin'] },
+    /* eslint-disable */
     locationLatitude: { pattern: '^[-]?\d*\.?\d*$' },
     locationLongitude: { pattern: '^[-]?\d*\.?\d*$' },
+    /* eslint-enable */
     addressStreet: { type: 'string', maxLength: 1024 },
     addressPostalCode: { type: 'string' },
     addressCity: { type: 'string' },

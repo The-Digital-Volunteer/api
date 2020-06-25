@@ -10,8 +10,10 @@ const assignRequest = {
 const searchInNeedRequest = {
   type: 'object',
   properties: {
+    /* eslint-disable */
     latitude: { pattern: '^[-]?\d*\.?\d*$' },
     longitude: { pattern: '^[-]?\d*\.?\d*$' },
+    /* eslint-enable */
   },
   required: ['latitude', 'longitude'],
   additionalProperties: false,
@@ -27,8 +29,10 @@ const registerRequest = {
     status: {
       type: 'integer', minimum: 0, maximum: 2, default: 0,
     },
+    /* eslint-disable */
     locationLatitude: { pattern: '^[-]?\d*\.?\d*$' },
     locationLongitude: { pattern: '^[-]?\d*\.?\d*$' },
+    /* eslint-enable */
     helpType: { enum: ['groceries', 'transport', 'medicine', 'other'] },
     timeOptions: { type: 'string', maxLength: 4096 },
     deliveryOption: { enum: ['door', 'porch', 'drone'] },

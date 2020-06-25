@@ -59,5 +59,10 @@
     "sequelize-cli": "^5.5.1",
     "shx": "^0.2.2",
     "supertest": "^4.0.2"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm test"
+    }
   }
 }

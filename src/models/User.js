@@ -10,31 +10,11 @@ import {
 } from 'sequelize';
 import bcrypt from 'bcryptjs';
 
-import UserRating from '../models/UserRating';
+import UserRating from './UserRating';
 
-const REQUEST_STATUS_INIT = 0;
-const REQUEST_STATUS_ACCEPTED = 1;
 const REQUEST_STATUS_DONE = 2;
-
-const HELP_TYPE_SHOP = 'groceries';
-const HELP_TYPE_TRANSPORT = 'transport';
-const HELP_TYPE_MEDICINE = 'medicine';
-const HELP_TYPE_OTHER = 'other';
-
-const DELIVERY_DOOR = 'door';
-const DELIVERY_PORCH = 'porch';
-const DELIVERY_DRONE = 'drone';
-
-const DELIVERY_CASH = 'cash';
-const DELIVERY_CARD = 'card';
-const DELIVERY_SWISH = 'swish';
-
 const ROLE_HELPER = 'helper';
-const ROLE_INNEED = 'inneed';
 const ROLE_ADMIN = 'admin';
-const SKILL_DRIVER = 'driver';
-const SKILL_PICKER = 'picker';
-const SKILL_SHOPPER = 'shopper';
 
 class User extends Model {
   static init(sequelize) {
@@ -84,8 +64,9 @@ class User extends Model {
     );
 
     this.addHook('beforeCreate', async (user) => {
+      const newUser = user;
       if (user.password) {
-        user.passwordHash = await bcrypt.hash(user.password, 8);
+        newUser.passwordHash = await bcrypt.hash(user.password, 8);
       }
     });
 
@@ -97,35 +78,32 @@ class User extends Model {
   }
 
   static isTheSame(userId, authUser) {
-    return userId == authUser.id;
+    return parseInt(userId, 10) === authUser.id;
   }
 
   static isAdmin(user) {
-    return user.type == ROLE_ADMIN;
+    return user.type === ROLE_ADMIN;
   }
 
-  static async searchForHelpers(latitude, longitude, helpType) {
-    const radius = 5000; // 5km
-    const helpTypeToSkill = {};
-    helpTypeToSkill[HELP_TYPE_SHOP] = SKILL_SHOPPER;
-    helpTypeToSkill[HELP_TYPE_TRANSPORT] = SKILL_DRIVER;
-    helpTypeToSkill[HELP_TYPE_MEDICINE] = SKILL_PICKER;
-    helpTypeToSkill[HELP_TYPE_OTHER] = SKILL_SHOPPER;
-    try {
-      const users = await User.scope('helpRequest').findAll({
-        attributes: {
-          include: [
-            [literal(`ST_Distance_Sphere(point(${longitude}, ${latitude}),point(locationLongitude, locationLatitude))`), 'distance'],
-          ],
-        },
-        where: { role: ROLE_HELPER, skills: { [Op.like]: `%${helpTypeToSkill[helpType]}%` } },
-        having: { distance: { [Op.lt]: radius } },
-      });
+  static async searchForHelpers(radius, latitude, longitude, helpType) {
+    const helpTypeToSkill = {
+      groceries: 'shopper',
+      transport: 'driver',
+      medicine: 'picker',
+      other: 'shopper',
+    };
 
-      return users;
-    } catch (err) {
-      throw err;
-    }
+    const users = await User.scope('helpRequest').findAll({
+      attributes: {
+        include: [
+          [literal(`ST_Distance_Sphere(point(${longitude}, ${latitude}),point(locationLongitude, locationLatitude))`), 'distance'],
+        ],
+      },
+      where: { role: ROLE_HELPER, skills: { [Op.like]: `%${helpTypeToSkill[helpType]}%` } },
+      having: { distance: { [Op.lt]: radius } },
+    });
+
+    return users;
   }
 
   static async getRating(userId) {
@@ -133,31 +111,30 @@ class User extends Model {
       where: { toUser: userId },
     });
     const average = (ratingsList) => {
-      if (ratingsList.length === 0) {
-        return 0;
-      }
-      let avg = 0;
-      for (const rating of ratingsList) {
-        avg += parseInt(rating.value, 10);
-      }
+      if (ratingsList.length === 0) return 0;
+
+      const avg = ratingsList
+        .map(({ value }) => parseInt(value, 10))
+        .reduce((accumulator, rating) => accumulator + rating, 0);
+
       return avg / (ratingsList.length);
     };
     return {
       total: ratings.length,
       average: average(ratings),
     };
-  };
+  }
 
   static async getPendingHelpers(userId) {
     return User.scope('helpRequest').findAll({
       where: literal(`
         User.id IN (
           SELECT assignedUser FROM help_requests
-          WHERE fromUser = ${ userId }
-          AND status = ${ REQUEST_STATUS_DONE }
+          WHERE fromUser = ${userId}
+          AND status = ${REQUEST_STATUS_DONE}
           AND assignedUser NOT IN (
             SELECT toUser FROM user_ratings
-            WHERE fromUser = ${ userId }
+            WHERE fromUser = ${userId}
           )
         )
       `),
@@ -169,11 +146,11 @@ class User extends Model {
       where: literal(`
         User.id IN (
           SELECT fromUser FROM help_requests
-          WHERE assignedUser = ${ userId }
-          AND status = ${ REQUEST_STATUS_DONE }
+          WHERE assignedUser = ${userId}
+          AND status = ${REQUEST_STATUS_DONE}
           AND fromUser NOT IN (
             SELECT toUser FROM user_ratings
-            WHERE fromUser = ${ userId }
+            WHERE fromUser = ${userId}
           )
         )
       `),
